@@ -1,0 +1,16 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: keda-cpu-app
+spec:
+  scaleTargetRef:
+    name: keda-cpu-app
+
+  minReplicaCount: 1
+  maxReplicaCount: 20
+
+  triggers:
+  - type: cpu
+    metricType: Utilization
+    metadata:
+      value: "50"

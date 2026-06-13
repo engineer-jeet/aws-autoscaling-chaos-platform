@@ -1,0 +1,24 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+
+spec:
+  amiFamily: AL2023
+
+  amiSelectorTerms:
+    - alias: al2023@latest
+
+  role: autoscaling-chaos-dev-karpenter-node
+
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: autoscaling-chaos-dev
+
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: autoscaling-chaos-dev
+
+  tags:
+    Project: aws-autoscaling-chaos-platform
+    Environment: dev

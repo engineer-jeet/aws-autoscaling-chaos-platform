@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spot-worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: spot-worker
+  template:
+    metadata:
+      labels:
+        app: spot-worker
+    spec:
+      nodeSelector:
+        workload: spot
+
+      containers:
+      - name: worker
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - "while true; do sleep 30; done"
+
+        resources:
+          requests:
+            cpu: "1000m"
+          limits:
+            cpu: "1000m"

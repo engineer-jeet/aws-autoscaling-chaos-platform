@@ -26,7 +26,7 @@ By the end of the project we will simulate and recover from scenarios involving:
 
 Most engineers learn:
 
-text CPU > 70% → Add More Servers 
+CPU > 70% → Add More Servers
 
 Real platforms scale based on much more than CPU.
 
@@ -49,16 +49,46 @@ The project intentionally recreates real-world bottlenecks that occur long befor
 
 # Current Project State
 
-## Phase 1 – Terraform Remote State
+Completed:
+
+✅ Terraform Remote State
+
+✅ VPC
+
+✅ Public Subnets
+
+✅ Private Subnets
+
+✅ NAT Gateway
+
+✅ EKS Control Plane
+
+✅ Managed Node Group
+
+✅ OIDC Provider
+
+✅ KMS Encryption
+
+✅ VPC CNI
+
+✅ kube-proxy
+
+✅ CoreDNS
+
+✅ Git Repository Structure
+
+---
+
+# Phase 1 – Terraform Remote State
 
 Completed.
 
-### Resources Created
+## Resources Created
 
 - S3 Bucket for Terraform State
 - DynamoDB Table for Terraform State Locking
 
-### Why?
+## Why?
 
 Terraform state is critical infrastructure.
 
@@ -70,15 +100,15 @@ Without remote state:
 
 The S3 + DynamoDB pattern is the industry-standard Terraform backend architecture.
 
-### Resources
+## Resources
 
 Terraform State Bucket:
 
-text aws-autoscaling-chaos-platform-tfstate-974318644331 
+aws-autoscaling-chaos-platform-tfstate-974318644331
 
 Terraform Lock Table:
 
-text aws-autoscaling-chaos-platform-locks 
+aws-autoscaling-chaos-platform-locks
 
 ---
 
@@ -90,21 +120,25 @@ Completed.
 
 Region:
 
-text ap-south-1 
+ap-south-1
 
 Availability Zones:
 
-text ap-south-1a ap-south-1b ap-south-1c 
+ap-south-1a
+ap-south-1b
+ap-south-1c
 
 VPC CIDR:
 
-text 10.0.0.0/16 
+10.0.0.0/16
 
 ---
 
 ## Public Subnets
 
-text 10.0.0.0/24 10.0.1.0/24 10.0.2.0/24 
+10.0.0.0/24
+10.0.1.0/24
+10.0.2.0/24
 
 Purpose:
 
@@ -115,7 +149,9 @@ Purpose:
 
 ## Private Subnets
 
-text 10.0.16.0/20 10.0.32.0/20 10.0.48.0/20 
+10.0.16.0/20
+10.0.32.0/20
+10.0.48.0/20
 
 Purpose:
 
@@ -125,13 +161,19 @@ Purpose:
 
 ---
 
-# Why Large Private Subnets?
+## Why Large Private Subnets?
 
 One of the future chaos experiments is subnet IP exhaustion.
 
 Many production outages happen because:
 
-text Cluster has CPU Cluster has Memory  But  No IP addresses remain 
+Cluster has CPU
+
+Cluster has Memory
+
+But
+
+No IP addresses remain
 
 Using dedicated private subnets allows us to later:
 
@@ -141,11 +183,11 @@ Using dedicated private subnets allows us to later:
 
 ---
 
-# NAT Gateway Design
+## NAT Gateway Design
 
 Current Design:
 
-text Single NAT Gateway 
+Single NAT Gateway
 
 This is intentional.
 
@@ -161,61 +203,69 @@ This project intentionally starts with a simpler design to allow us to demonstra
 
 Future experiments will compare:
 
-text Single NAT vs NAT Per AZ 
+Single NAT vs NAT Per AZ
 
 and evaluate the cost vs resiliency tradeoff.
 
 ---
 
-# Karpenter Discovery Tags
+## Karpenter Discovery Tags
 
 Subnets are tagged for future Karpenter integration.
 
-text karpenter.sh/discovery=autoscaling-chaos-dev 
+karpenter.sh/discovery=autoscaling-chaos-dev
 
 These tags allow Karpenter to discover where it can provision capacity.
 
 ---
 
-# Phase 3 – EKS Cluster Design
+# Phase 3 – EKS Cluster Deployment
 
-Planned.
+Completed.
 
-Terraform plan completed successfully.
+## Cluster Configuration
 
-## Cluster
+Cluster Name:
 
-Name:
+autoscaling-chaos-dev
 
-text autoscaling-chaos-dev 
+Kubernetes Version:
 
-Version:
+1.32
 
-text 1.32 
+Region:
+
+ap-south-1
 
 ---
 
 ## Bootstrap Node Group
 
+Purpose:
+
+Provide the initial compute capacity required to run cluster services and future platform components.
+
 Configuration:
 
-text Instance Type : t4g.large Desired       : 2 Minimum       : 2 Maximum       : 4 
+Instance Type: t4g.large
 
-Architecture:
+Architecture: ARM64
 
-text ARM64 
+Operating System: Amazon Linux 2023
 
-AMI:
+Desired Capacity: 2
 
-text Amazon Linux 2023 
+Minimum Capacity: 2
+
+Maximum Capacity: 4
 
 ---
 
-# Why Not Start With Karpenter?
+## Why Not Start With Karpenter?
 
 A common mistake is trying to build:
 
-text EKS + Karpenter 
+EKS + Karpenter
 
 with no worker nodes.
 
@@ -225,11 +275,15 @@ Pods require nodes.
 
 This creates a bootstrap dependency problem:
 
-text Karpenter needs nodes Nodes need Karpenter 
+Karpenter needs nodes
+
+Nodes need Karpenter
 
 To solve this:
 
-text Managed Node Group → Hosts Karpenter → Karpenter Creates Additional Nodes 
+Managed Node Group
+→ Hosts Karpenter
+→ Karpenter Creates Additional Nodes
 
 This mirrors production deployments used by many organizations.
 
@@ -250,7 +304,7 @@ Purpose:
 
 ## IAM Roles for Service Accounts (IRSA)
 
-OIDC provider is being created.
+OIDC provider created successfully.
 
 This enables:
 
@@ -263,21 +317,218 @@ to access AWS APIs without storing credentials inside pods.
 
 ---
 
-# Upcoming Phases
+# Phase 4 – EKS Bootstrap Failure Investigation
 
-## Phase 4
+Completed.
 
-Cluster Deployment
-
-- Terraform Apply
-- kubeconfig setup
-- Node verification
+This phase exposed a real-world EKS bootstrap issue that is commonly encountered when deploying production clusters.
 
 ---
 
-## Phase 5
+## Initial Symptoms
 
-Core Platform Components
+Terraform reported:
+
+NodeCreationFailure
+
+and the Managed Node Group entered:
+
+CREATE_FAILED
+
+after approximately 30 minutes.
+
+However:
+
+- EKS Control Plane was ACTIVE
+- EC2 instances were running
+- Nodes appeared inside Kubernetes
+
+This indicated the failure was occurring after node launch.
+
+---
+
+## Investigation
+
+Cluster Status:
+
+aws eks describe-cluster
+
+Result:
+
+ACTIVE
+
+Node Status:
+
+kubectl get nodes
+
+Result:
+
+Nodes were present but remained NotReady.
+
+Further inspection:
+
+kubectl describe node
+
+showed:
+
+NetworkPluginNotReady
+
+cni plugin not initialized
+
+Checking cluster workloads:
+
+kubectl get pods -A
+
+returned:
+
+No resources found
+
+Checking EKS managed addons:
+
+aws eks list-addons
+
+returned:
+
+[]
+
+No addons were installed.
+
+---
+
+## Root Cause
+
+The cluster was missing the required EKS managed addons:
+
+- VPC CNI
+- kube-proxy
+- CoreDNS
+
+Without VPC CNI:
+
+- Pod networking cannot initialize
+- Nodes remain NotReady
+- Managed Node Group creation eventually fails
+
+The worker nodes themselves were healthy.
+
+The Kubernetes networking layer never became operational.
+
+---
+
+## Resolution
+
+Installed required EKS managed addons manually.
+
+VPC CNI:
+
+aws eks create-addon --addon-name vpc-cni
+
+kube-proxy:
+
+aws eks create-addon --addon-name kube-proxy
+
+CoreDNS:
+
+aws eks create-addon --addon-name coredns
+
+After the addons became ACTIVE:
+
+kubectl get nodes
+
+returned:
+
+Ready
+
+Core Kubernetes services immediately started successfully.
+
+---
+
+## Validation
+
+Healthy Cluster State:
+
+Nodes:
+
+2 Ready Nodes
+
+System Pods:
+
+- aws-node
+- kube-proxy
+- CoreDNS
+
+All Running Successfully.
+
+---
+
+## Lessons Learned
+
+A worker node can successfully join an EKS cluster while still remaining NotReady.
+
+When troubleshooting EKS bootstrap failures, always inspect:
+
+- kubectl get nodes
+- kubectl describe node
+- kubectl get pods -A
+- aws eks list-addons
+
+before assuming the issue is related to:
+
+- IAM
+- Security Groups
+- Routing
+- NAT Gateway
+- VPC Configuration
+
+This troubleshooting exercise provided practical experience with how EKS worker nodes, networking, and managed addons interact during cluster initialization.
+
+---
+
+# Current Running Infrastructure
+
+Region:
+
+ap-south-1
+
+Cluster:
+
+autoscaling-chaos-dev
+
+Nodes:
+
+2 x t4g.large
+
+Node Status:
+
+Ready
+
+Core Addons:
+
+- VPC CNI
+- kube-proxy
+- CoreDNS
+
+Terraform Backend:
+
+Operational
+
+VPC:
+
+Operational
+
+OIDC Provider:
+
+Operational
+
+KMS Encryption:
+
+Operational
+
+---
+
+# Upcoming Phases
+
+## Phase 5 – Core Platform Components
 
 - Metrics Server
 - AWS Load Balancer Controller
@@ -285,20 +536,16 @@ Core Platform Components
 
 ---
 
-## Phase 6
+## Phase 6 – Autoscaling
 
-Autoscaling
-
-- HPA
+- Horizontal Pod Autoscaler (HPA)
 - KEDA
 - Request-based scaling
 - Connection-based scaling
 
 ---
 
-## Phase 7
-
-Spot Capacity Engineering
+## Phase 7 – Spot Capacity Engineering
 
 - Mixed instance types
 - Spot interruption handling
@@ -307,9 +554,7 @@ Spot Capacity Engineering
 
 ---
 
-## Phase 8
-
-Chaos Engineering
+## Phase 8 – Chaos Engineering
 
 - Node failures
 - Spot interruptions
@@ -320,9 +565,7 @@ Chaos Engineering
 
 ---
 
-## Phase 9
-
-Large Event Simulation
+## Phase 9 – Large Event Simulation
 
 Simulate traffic patterns similar to:
 
@@ -339,24 +582,31 @@ while measuring:
 
 ---
 
-## Phase 10
+## Phase 10 – Multi-Region Platform
 
-Global Platform Design
-
-- Multi-region deployment
+- Multi-region EKS deployment
 - Route53 latency routing
-- CDN integration
 - Regional failover
+- Cross-region resilience testing
+
+---
+
+## Phase 11 – Global Platform Design
+
+- CDN integration
+- Edge optimization
+- Global traffic steering
+- Worldwide failover architecture
 
 ---
 
 # Key Lesson
 
-The biggest lesson of this project is expected to be:
+The biggest lesson of this project so far is:
 
 Autoscaling is often not the difficult part.
 
-The difficult part is finding capacity when everyone else is also trying to scale.
+The difficult part is finding capacity and maintaining platform dependencies when everything is under pressure.
 
 During major events:
 
@@ -365,5 +615,6 @@ During major events:
 - Entire Availability Zones may be under pressure
 - Network limits may be reached
 - IP address exhaustion may occur
+- Critical platform components may fail before applications fail
 
 Designing for those realities is what separates a resilient platform from a platform that merely has an autoscaler configured.

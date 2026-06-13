@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keda-cpu-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keda-cpu-app
+  template:
+    metadata:
+      labels:
+        app: keda-cpu-app
+    spec:
+      containers:
+      - name: cpu-app
+        image: busybox
+        command:
+          - /bin/sh
+          - -c
+          - "while true; do :; done"
+        resources:
+          requests:
+            cpu: "1000m"
+          limits:
+            cpu: "1000m"
