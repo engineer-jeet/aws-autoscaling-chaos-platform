@@ -7,7 +7,7 @@
         "sqs:GetQueueAttributes",
         "sqs:GetQueueUrl"
       ],
-      "Resource": "arn:aws:sqs:ap-south-1:974318644331:orders-queue"
+      "Resource": "<SQS_QUEUE_ARN>"
     }
   ]
 }

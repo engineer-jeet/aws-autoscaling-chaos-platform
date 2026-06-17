@@ -1,0 +1,36 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: webapp-alb-scaler
+
+spec:
+  scaleTargetRef:
+    name: webapp
+
+  pollingInterval: 30
+  cooldownPeriod: 300
+
+  minReplicaCount: 2
+  maxReplicaCount: 10
+
+  triggers:
+  - type: aws-cloudwatch
+
+    authenticationRef:
+      name: keda-aws-auth
+
+    metadata:
+      namespace: AWS/ApplicationELB
+      metricName: RequestCountPerTarget
+
+      dimensionName: TargetGroup
+      dimensionValue: <alb-target-group>
+
+      targetMetricValue: "0.2"
+      minMetricValue: "0"
+
+      metricStat: Average
+      metricCollectionTime: "300"
+      metricStatPeriod: "60"
+
+      awsRegion: ap-south-1

@@ -9,15 +9,15 @@ spec:
   amiSelectorTerms:
     - alias: al2023@latest
 
-  role: autoscaling-chaos-dev-karpenter-node
+  role: <karpenter-node-role>
 
   subnetSelectorTerms:
     - tags:
-        karpenter.sh/discovery: autoscaling-chaos-dev
+        karpenter.sh/discovery: <cluster-name>
 
   securityGroupSelectorTerms:
     - tags:
-        karpenter.sh/discovery: autoscaling-chaos-dev
+        karpenter.sh/discovery: <cluster-name>
 
   tags:
     Project: aws-autoscaling-chaos-platform

@@ -27,6 +27,6 @@ resource "aws_iam_role" "alb_controller" {
 
 resource "aws_iam_role_policy_attachment" "alb_controller" {
   role       = aws_iam_role.alb_controller.name
-  policy_arn = "arn:aws:iam::974318644331:policy/AWSLoadBalancerControllerIAMPolicy"
+  policy_arn = "<ALB_CONTROLLER_POLICY_ARN>"
 }
 

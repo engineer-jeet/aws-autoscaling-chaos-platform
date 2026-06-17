@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "aws-autoscaling-chaos-platform-tfstate-974318644331"
+  bucket = "<TFSTATE_BUCKET_NAME>"
 }
 
 resource "aws_s3_bucket_versioning" "versioning" {

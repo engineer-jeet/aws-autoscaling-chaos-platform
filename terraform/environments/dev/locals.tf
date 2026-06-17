@@ -6,6 +6,6 @@ locals {
     Project     = local.project
     Environment = local.environment
     ManagedBy   = "Terraform"
-    Owner       = "jeet"
+    Owner       = "platform-team"
   }
 }

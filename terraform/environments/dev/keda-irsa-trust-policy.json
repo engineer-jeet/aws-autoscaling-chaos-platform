@@ -4,13 +4,13 @@
     {
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::974318644331:oidc-provider/oidc.eks.ap-south-1.amazonaws.com/id/A104D248592F0E30FE0B2D5161D25664"
+        "Federated": "<OIDC_PROVIDER_ARN>"
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
-          "oidc.eks.ap-south-1.amazonaws.com/id/A104D248592F0E30FE0B2D5161D25664:sub": "system:serviceaccount:keda:keda-operator",
-          "oidc.eks.ap-south-1.amazonaws.com/id/A104D248592F0E30FE0B2D5161D25664:aud": "sts.amazonaws.com"
+          "<EKS_OIDC_PROVIDER>:sub": "system:serviceaccount:keda:keda-operator",
+          "<EKS_OIDC_PROVIDER>:aud": "sts.amazonaws.com"
         }
       }
     }
