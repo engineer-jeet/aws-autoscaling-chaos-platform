@@ -1,6 +1,42 @@
 Project Summary
 
+## Key Results
+
+- Built a production-inspired Amazon EKS platform using Terraform, KEDA, Karpenter, ALB, and CloudWatch.
+- Implemented request-driven autoscaling using ALB RequestCountPerTarget metrics.
+- Validated autoscaling behavior under load using k6.
+- Successfully sustained approximately 1,125 requests per second during testing.
+- Analyzed common production failure modes including HTTP 503, connection timeouts, connection refused, Spot interruptions, and IP exhaustion scenarios.
+- Documented operational runbooks and troubleshooting workflows for real-world SRE incidents.
+
 Overview
+
+                        +------------------+
+                        |      Users       |
+                        +---------+--------+
+                                  |
+                                  v
+                     +------------------------+
+                     | AWS Application LB     |
+                     +-----------+------------+
+                                 |
+                                 v
+                      CloudWatch Metrics
+                                 |
+                                 v
+                               KEDA
+                                 |
+                                 v
+                                HPA
+                                 |
+                                 v
+                       Kubernetes Pods
+                                 |
+                                 v
+                            Karpenter
+                                 |
+                                 v
+                       EC2 Worker Nodes
 
 This project was built to explore and implement production-grade autoscaling, capacity management, and resilience engineering concepts on Amazon EKS.
 
@@ -158,7 +194,7 @@ Load testing was performed using k6 to validate autoscaling behavior.
 
 The objective was not to identify the maximum throughput of the application, but rather to observe how the platform reacted to increasing traffic and whether autoscaling components behaved as expected.
 
-The platform successfully handled approximately 1,125 requests per second during testing.
+Load testing validated the complete autoscaling workflow, demonstrating successful interaction between CloudWatch, KEDA, HPA, Kubernetes scheduling, and Karpenter-based node provisioning under increasing traffic demand.
 
 The exercise demonstrated:
 
